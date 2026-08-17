@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import "./App.css";
 
 // สร้างหัวใจครั้งเดียว
@@ -13,15 +13,32 @@ const hearts = Array.from({ length: 30 }, (_, index) => ({
 function App() {
   const [showLove, setShowLove] = useState(false);
 
-  // ตำแหน่งปุ่มไม่รัก
+  // ตำแหน่งปุ่ม "ไม่รัก"
   const [noPosition, setNoPosition] = useState({
     x: 0,
     y: 0,
   });
 
-  // กด "ไม่รัก"
-  // ปุ่มจะย้ายตำแหน่ง แต่หัวใจจะไม่ถูก Reset
+  // ตัวควบคุมเพลง
+  const audioRef = useRef(null);
+
+  // กดปุ่ม "รัก"
+  const handleLoveClick = () => {
+    setShowLove(true);
+
+    // เริ่มเล่นเพลง
+    if (audioRef.current) {
+      audioRef.current
+        .play()
+        .catch((error) => {
+          console.log("ไม่สามารถเล่นเพลงได้:", error);
+        });
+    }
+  };
+
+  // กดปุ่ม "ไม่รัก"
   const handleNoClick = () => {
+    // สุ่มตำแหน่งใหม่ทุกครั้ง
     const newX = Math.random() * 180 - 90;
     const newY = Math.random() * 160 - 80;
 
@@ -34,12 +51,23 @@ function App() {
   return (
     <div className="app">
 
-      {/* =========================
+      {/* =================================
+          เพลงพื้นหลัง
+          ================================= */}
+
+      <audio
+        ref={audioRef}
+        src="/music.mp3"
+        loop
+      />
+
+
+      {/* =================================
           หัวใจพื้นหลัง
-          จะลอยต่อเนื่องตลอดเวลา
-      ========================= */}
+          ================================= */}
 
       <div className="hearts">
+
         {hearts.map((heart) => (
           <span
             key={heart.id}
@@ -54,53 +82,77 @@ function App() {
             ❤️
           </span>
         ))}
+
       </div>
 
-      {/* =========================
+
+      {/* =================================
           Popup
-      ========================= */}
+          ================================= */}
 
       <div className="popup">
 
         {!showLove ? (
+
           <>
+            {/* หัวใจตรงกลาง */}
+
             <div className="big-heart">
               ❤️
             </div>
 
-            <h1>รักเค้าไหม</h1>
+
+            {/* คำถาม */}
+
+            <h1>
+              รักเค้าไหม
+            </h1>
 
             <p>
               เลือกคำตอบสิ 💕
             </p>
 
+
+            {/* ปุ่ม */}
+
             <div className="buttons">
 
-              {/* รัก */}
+              {/* ปุ่มรัก */}
+
               <button
                 className="yes-button"
-                onClick={() => setShowLove(true)}
+                onClick={handleLoveClick}
               >
                 รัก
               </button>
 
-              {/* ไม่รัก */}
+
+              {/* ปุ่มไม่รัก */}
+
               <button
                 className="no-button"
                 onClick={handleNoClick}
                 style={{
-                  transform: `translate(
-                    ${noPosition.x}px,
-                    ${noPosition.y}px
-                  )`,
+                  transform: `
+                    translate(
+                      ${noPosition.x}px,
+                      ${noPosition.y}px
+                    )
+                  `,
                 }}
               >
                 ไม่รัก
               </button>
 
             </div>
+
           </>
+
         ) : (
+
+          /* =================================
+             หลังจากกดรัก
+             ================================= */
 
           <div className="love-message">
 
@@ -115,6 +167,10 @@ function App() {
             <p>
               เค้ารักเบบี้ที่สุดเลยนะ 🥰
             </p>
+
+            <div className="music-playing">
+              🎵 เพลงกำลังเล่น...
+            </div>
 
           </div>
 
